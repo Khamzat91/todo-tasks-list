@@ -9,12 +9,27 @@ function Reducer(state, action) {
     return [
       ...state,
       {
-        id: state.length + 1,
-        text: action.text,
-        completed: action.checked
+        id: state[state.length - 1].id + 1,
+        text: action.payload.text,
+        completed: action.payload.checked
       }
     ]
   }
+  if (action.type === 'ADD_REMOVE') {
+    return state.filter((i) => i.id !== action.payload)
+  }
+  if (action.type === 'TOGGLE_COMPLETED') {
+    return state.map((i) => {
+      if (i.id === action.payload) {
+     return {
+       ...i,
+       completed: !i.completed
+     }
+      }
+      return i;
+    })
+  }
+
   return state;
 }
 
@@ -33,11 +48,31 @@ function App() {
   const addClick = () => {
     dispatch({
       type: 'ADD_CLICK',
-      text, checked
+      payload: {
+        text,
+        checked
+      }
     })
     setText('')
     setChecked(false)
   }
+
+  const onRemove = (id) => {
+    if (window.confirm('Удалить эту задачу?')) {
+      dispatch({
+        type: 'ADD_REMOVE',
+        payload: id
+      })
+    }
+  }
+
+  const toggleCompleted = (id) => {
+    dispatch({
+      type: 'TOGGLE_COMPLETED',
+      payload: id
+    })
+  }
+
 
   return (
     <div className="App">
@@ -60,7 +95,12 @@ function App() {
         <Divider/>
         <List>
           {
-            state.map((obj) => <Item key={obj.id} id={obj.id} text={obj.text} completed={obj.completed}/>)
+            state.map((obj) => <Item key={obj.id}
+                                     id={obj.id}
+                                     text={obj.text}
+                                     completed={obj.completed}
+                                     onRemove={onRemove}
+                                     onClickCheckbox={toggleCompleted}/>)
           }
         </List>
         <Divider/>
