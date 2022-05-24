@@ -6,43 +6,106 @@ import './index.scss';
 
 function Reducer(state, action) {
   if (action.type === 'ADD_CLICK') {
-    return [
+    return {
       ...state,
-      {
-        id: state[state.length - 1].id + 1,
-        text: action.payload.text,
-        completed: action.payload.checked
-      }
-    ]
+      tasks: [
+        ...state.tasks,
+        {
+          id: state.tasks[state.tasks.length - 1].id + 1,
+          text: action.payload.text,
+          completed: action.payload.checked
+        }
+      ]
+    }
   }
   if (action.type === 'ADD_REMOVE') {
-    return state.filter((i) => i.id !== action.payload)
+    return {
+      ...state,
+      tasks: state.tasks.filter((i) => i.id !== action.payload)
+    }
   }
   if (action.type === 'TOGGLE_COMPLETED') {
-    return state.map((i) => {
-      if (i.id === action.payload) {
-     return {
-       ...i,
-       completed: !i.completed
-     }
-      }
-      return i;
-    })
+    return {
+      ...state,
+      tasks: state.tasks.map((i) => {
+        if (i.id === action.payload) {
+          return {
+            ...i,
+            completed: !i.completed
+          }
+        }
+        return i;
+      })
+    }
+  }
+  if (action.type === 'ON_CLEAR') {
+    return {
+      ...state,
+      tasks: []
+    }
+  }
+
+  if (action.type === 'COMPLETE_ALL') {
+    return {
+      ...state,
+      tasks: state.tasks.map((i) => ({
+        ...i,
+        completed: true
+      }))
+    }
+  }
+
+  if (action.type === 'SET_FILTER') {
+    return {
+      ...state,
+      filterBay: action.payload
+    }
+  }
+
+  if (action.type === 'EDIT_TASK') {
+    return {
+      ...state,
+      tasks: state.tasks.map((obj) => obj.id === action.payload.id ? {...obj, text: action.payload.newText} : obj)
+    }
   }
 
   return state;
 }
 
+const filterIndex = [
+  'all',
+  'active',
+  'completed'
+]
+
 function App() {
   const [text, setText] = React.useState('');
   const [checked, setChecked] = React.useState(false);
-  const [state, dispatch] = React.useReducer(Reducer, [
-    {
-      id: 1,
-      text: 'задача №1',
-      completed: true
-    }
-  ])
+  const [state, dispatch] = React.useReducer(Reducer, {
+    filterBay: 'all',
+    tasks: [
+      {
+        id: 1,
+        text: 'задача №1',
+        completed: false
+      },
+      {
+        id: 2,
+        text: 'задача №1',
+        completed: true
+      },
+      {
+        id: 3,
+        text: 'задача №1',
+        completed: false
+      },
+      {
+        id: 4,
+        text: 'задача №1',
+        completed: true
+      }
+    ]
+  })
 
 
   const addClick = () => {
@@ -73,6 +136,36 @@ function App() {
     })
   }
 
+  const onClear = () => {
+    if (window.confirm('очистить задачу?')) {
+      dispatch({
+        type: 'ON_CLEAR'
+      })
+    }
+  }
+
+  const completeAll = () => {
+    dispatch({
+      type: 'COMPLETE_ALL',
+    })
+  }
+
+  const setFilter = (_, newIndex) => {
+    dispatch({
+      type: 'SET_FILTER',
+      payload: filterIndex[newIndex]
+    })
+  }
+
+  const onEditTask = (text, id) => {
+    const newText = prompt("редактировать задачу?", text)
+    if (newText !== null){
+      dispatch({
+        type: 'EDIT_TASK',
+        payload: {newText, id}
+      })
+    }
+  }
 
   return (
     <div className="App">
@@ -87,7 +180,7 @@ function App() {
                   addClick={addClick}
         />
         <Divider/>
-        <Tabs value={0}>
+        <Tabs onChange={setFilter} value={filterIndex[state.filterBay]}>
           <Tab label="Все"/>
           <Tab label="Активные"/>
           <Tab label="Завершённые"/>
@@ -95,18 +188,29 @@ function App() {
         <Divider/>
         <List>
           {
-            state.map((obj) => <Item key={obj.id}
-                                     id={obj.id}
-                                     text={obj.text}
-                                     completed={obj.completed}
-                                     onRemove={onRemove}
-                                     onClickCheckbox={toggleCompleted}/>)
+            state.tasks.filter((i) => {
+              if (state.filterBay === 'all') {
+                return true
+              }
+              if (state.filterBay === 'completed') {
+                return i.completed
+              }
+              if (state.filterBay === 'active') {
+                return !i.completed
+              }
+            }).map((obj) => <Item key={obj.id}
+                                  id={obj.id}
+                                  text={obj.text}
+                                  completed={obj.completed}
+                                  onRemove={onRemove}
+                                  onClickCheckbox={toggleCompleted}
+                                  onEditTask={onEditTask}/>)
           }
         </List>
         <Divider/>
         <div className="check-buttons">
-          <Button>Отметить всё</Button>
-          <Button>Очистить</Button>
+          <Button disabled={!state.tasks.length} onClick={completeAll}>Отметить всё</Button>
+          <Button disabled={!state.tasks.length} onClick={onClear}>Очистить</Button>
         </div>
       </Paper>
     </div>
