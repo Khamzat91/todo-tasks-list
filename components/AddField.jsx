@@ -3,7 +3,7 @@ import AddIcon from '@mui/icons-material/Add';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
-export const AddField = ({text, setText, checked, setChecked, addClick}) => {
+export const AddField = ({text, setText, checked, setChecked, handleClickAdd}) => {
 
   const handleChange = (e) => {
     setText(e.target.value)
@@ -23,7 +23,7 @@ export const AddField = ({text, setText, checked, setChecked, addClick}) => {
         checkedIcon={<CheckCircleIcon />}
       />
       <TextField onChange={handleChange} value={text} placeholder="Введите текст задачи..." variant="standard" fullWidth />
-      <Button onClick={addClick}>
+      <Button onClick={() => handleClickAdd(text, checked)}>
         <AddIcon />
       </Button>
     </div>

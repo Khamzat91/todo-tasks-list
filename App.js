@@ -5,6 +5,8 @@ import {Item} from './components/Item';
 import './index.scss';
 import {useDispatch, useSelector} from "react-redux";
 import Filter from "./components/Filter";
+import { addClick, onRemove, onClear, toggleCompleted } from "./redux/actions/tasks";
+import { completedAll, onEditTask } from "./redux/actions/filter";
 
 
 function App() {
@@ -14,56 +16,37 @@ function App() {
   const state = useSelector(state => state)
 
 
-  const addClick = () => {
-    dispatch({
-      type: 'ADD_CLICK',
-      payload: {
-        text,
-        checked
-      }
-    })
+  const handleClickAdd = (text, checked) => {
+    dispatch(addClick(text, checked))
     setText('')
     setChecked(false)
   }
 
-  const onRemove = (id) => {
+  const handleClickRemove = (id) => {
     if (window.confirm('Удалить эту задачу?')) {
-      dispatch({
-        type: 'ADD_REMOVE',
-        payload: id
-      })
+      dispatch(onRemove(id))
     }
   }
 
-  const toggleCompleted = (id) => {
-    dispatch({
-      type: 'TOGGLE_COMPLETED',
-      payload: id
-    })
+  const handleClickCompleted = (id) => {
+    dispatch(toggleCompleted(id))
   }
 
-  const onClear = () => {
+  const handleClickClear = () => {
     if (window.confirm('очистить задачу?')) {
-      dispatch({
-        type: 'ON_CLEAR'
-      })
+      dispatch(onClear())
     }
   }
 
-  const completeAll = () => {
-    dispatch({
-      type: 'COMPLETE_ALL',
-    })
+  const handleClickCompletedAll = () => {
+    dispatch(completedAll())
   }
 
 
-  const onEditTask = (text, id) => {
+  const handleClickEditTask = (text, id) => {
     const newText = prompt("редактировать задачу?", text)
     if (newText !== null) {
-      dispatch({
-        type: 'EDIT_TASK',
-        payload: {newText, id}
-      })
+      dispatch(onEditTask(text, id))
     }
   }
 
@@ -77,7 +60,7 @@ function App() {
                   setText={setText}
                   checked={checked}
                   setChecked={setChecked}
-                  addClick={addClick}
+                  handleClickAdd={handleClickAdd}
         />
         <Divider/>
         <Filter/>
@@ -85,28 +68,28 @@ function App() {
         <List>
           {
             state.tasks.filter((i) => {
-              if (state.filterBay === 'all') {
+              if (state.filter.filterBay === 'all') {
                 return true
               }
-              if (state.filterBay === 'completed') {
+              if (state.filter.filterBay === 'completed') {
                 return i.completed
               }
-              if (state.filterBay === 'active') {
+              if (state.filter.filterBay === 'active') {
                 return !i.completed
               }
             }).map((obj) => <Item key={obj.id}
                                   id={obj.id}
                                   text={obj.text}
                                   completed={obj.completed}
-                                  onRemove={onRemove}
-                                  onClickCheckbox={toggleCompleted}
-                                  onEditTask={onEditTask}/>)
+                                  handleClickRemove={handleClickRemove}
+                                  onClickCheckbox={handleClickCompleted}
+                                  handleClickEditTask={handleClickEditTask}/>)
           }
         </List>
         <Divider/>
         <div className="check-buttons">
-          <Button disabled={!state.tasks.length} onClick={completeAll}>Отметить всё</Button>
-          <Button disabled={!state.tasks.length} onClick={onClear}>Очистить</Button>
+          <Button disabled={!state.tasks.length} onClick={handleClickCompletedAll}>Отметить всё</Button>
+          <Button disabled={!state.tasks.length} onClick={handleClickClear}>Очистить</Button>
         </div>
       </Paper>
     </div>
