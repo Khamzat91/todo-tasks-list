@@ -3,109 +3,15 @@ import {Paper, Divider, Button, List, Tabs, Tab} from '@mui/material';
 import {AddField} from './components/AddField';
 import {Item} from './components/Item';
 import './index.scss';
+import {useDispatch, useSelector} from "react-redux";
+import Filter from "./components/Filter";
 
-function Reducer(state, action) {
-  if (action.type === 'ADD_CLICK') {
-    return {
-      ...state,
-      tasks: [
-        ...state.tasks,
-        {
-          id: state.tasks[state.tasks.length - 1].id + 1,
-          text: action.payload.text,
-          completed: action.payload.checked
-        }
-      ]
-    }
-  }
-  if (action.type === 'ADD_REMOVE') {
-    return {
-      ...state,
-      tasks: state.tasks.filter((i) => i.id !== action.payload)
-    }
-  }
-  if (action.type === 'TOGGLE_COMPLETED') {
-    return {
-      ...state,
-      tasks: state.tasks.map((i) => {
-        if (i.id === action.payload) {
-          return {
-            ...i,
-            completed: !i.completed
-          }
-        }
-        return i;
-      })
-    }
-  }
-  if (action.type === 'ON_CLEAR') {
-    return {
-      ...state,
-      tasks: []
-    }
-  }
-
-  if (action.type === 'COMPLETE_ALL') {
-    return {
-      ...state,
-      tasks: state.tasks.map((i) => ({
-        ...i,
-        completed: true
-      }))
-    }
-  }
-
-  if (action.type === 'SET_FILTER') {
-    return {
-      ...state,
-      filterBay: action.payload
-    }
-  }
-
-  if (action.type === 'EDIT_TASK') {
-    return {
-      ...state,
-      tasks: state.tasks.map((obj) => obj.id === action.payload.id ? {...obj, text: action.payload.newText} : obj)
-    }
-  }
-
-  return state;
-}
-
-const filterIndex = [
-  'all',
-  'active',
-  'completed'
-]
 
 function App() {
   const [text, setText] = React.useState('');
   const [checked, setChecked] = React.useState(false);
-  const [state, dispatch] = React.useReducer(Reducer, {
-    filterBay: 'all',
-    tasks: [
-      {
-        id: 1,
-        text: 'задача №1',
-        completed: false
-      },
-      {
-        id: 2,
-        text: 'задача №1',
-        completed: true
-      },
-      {
-        id: 3,
-        text: 'задача №1',
-        completed: false
-      },
-      {
-        id: 4,
-        text: 'задача №1',
-        completed: true
-      }
-    ]
-  })
+  const dispatch = useDispatch();
+  const state = useSelector(state => state)
 
 
   const addClick = () => {
@@ -150,16 +56,10 @@ function App() {
     })
   }
 
-  const setFilter = (_, newIndex) => {
-    dispatch({
-      type: 'SET_FILTER',
-      payload: filterIndex[newIndex]
-    })
-  }
 
   const onEditTask = (text, id) => {
     const newText = prompt("редактировать задачу?", text)
-    if (newText !== null){
+    if (newText !== null) {
       dispatch({
         type: 'EDIT_TASK',
         payload: {newText, id}
@@ -180,11 +80,7 @@ function App() {
                   addClick={addClick}
         />
         <Divider/>
-        <Tabs onChange={setFilter} value={filterIndex[state.filterBay]}>
-          <Tab label="Все"/>
-          <Tab label="Активные"/>
-          <Tab label="Завершённые"/>
-        </Tabs>
+        <Filter/>
         <Divider/>
         <List>
           {
