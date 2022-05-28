@@ -5,7 +5,7 @@ import {Item} from './components/Item';
 import './index.scss';
 import {useDispatch, useSelector} from "react-redux";
 import Filter from "./components/Filter";
-import { addClick, onRemove, onClear, toggleCompleted } from "./redux/actions/tasks";
+import { addClick, onRemove, onClear, toggleCompleted, fetchTasks } from "./redux/actions/tasks";
 import { completedAll, onEditTask } from "./redux/actions/filter";
 
 
@@ -49,6 +49,10 @@ function App() {
       dispatch(onEditTask(text, id))
     }
   }
+
+  React.useEffect(() => {
+    dispatch(fetchTasks())
+  }, [])
 
   return (
     <div className="App">
